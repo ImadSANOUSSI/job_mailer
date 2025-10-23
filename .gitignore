@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+.build/
+.pytest_cache/
+.mypy_cache/
+
+# Envs
+.env
+.env.*
+venv/
+
+# OS & IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Docs/outputs
+out_letters/
+sent_log.csv
+contacts.csv
+urls.csv
