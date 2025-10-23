@@ -45,7 +45,11 @@ def generate_for_post(job_post_text: str, out_folder: str, filename_prefix: str 
     if not os.path.exists(template_path):
         raise FileNotFoundError("Template file not found")
     template_text = read_template(template_path)
-    letter_text = ask_model(template_text, job_post_text, extra_instructions)
+    if (job_post_text or "").strip():
+        letter_text = ask_model(template_text, job_post_text, extra_instructions)
+    else:
+        # No job description provided: output the template as-is
+        letter_text = template_text
     safe = safe_filename(filename_prefix)
     out_path = os.path.join(out_folder, f"{safe}.docx")
     save_docx_from_text(letter_text, out_path)

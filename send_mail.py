@@ -8,6 +8,16 @@ from modify_letter import generate_for_post
 
 
 def gen_subject_body(job_post_text: str, company: str) -> Dict[str, str]:
+    job_post_text = (job_post_text or "").strip()
+    if not job_post_text:
+        subject = f"Candidature – {company}" if company else "Candidature"
+        body = (
+            "Bonjour,\n\n"
+            "Je vous contacte pour vous proposer ma candidature. Vous trouverez ci-joint mon CV ainsi qu’une lettre de motivation.\n\n"
+            "Je reste à votre disposition pour tout échange.\n\n"
+            "Cordialement,\n"
+        )
+        return {"subject": subject[:150], "body": body}
     client = get_openai_client()
     system = (
         "Tu es un assistant qui rédige des emails de candidature concis en français. "
@@ -61,6 +71,8 @@ def main() -> None:
     p.add_argument("--out_sent", default="sent_log.csv")
     p.add_argument("--dry", action="store_true")
     p.add_argument("--letters_out", default="out_letters")
+    p.add_argument("--jobfile_default", default="", help="Path to a job post text used when a row lacks job_post_text")
+    p.add_argument("--company_default", default="", help="Default company name when missing in rows")
     a = p.parse_args()
 
     smtp_host = get_env("SMTP_HOST", required=True)
@@ -73,13 +85,21 @@ def main() -> None:
     rows = read_csv(a.contacts)
     sent_log: List[Dict[str, Any]] = []
 
+    default_job_text = ""
+    if a.jobfile_default:
+        try:
+            with open(a.jobfile_default, encoding="utf-8") as f:
+                default_job_text = f.read().strip()
+        except Exception as ex:
+            logger.error(f"Failed to read --jobfile_default: {ex}")
+
     for r in rows:
         email = (r.get("email") or "").strip()
         if not validate_email(email):
             logger.warning(f"Skipping invalid email: {email}")
             continue
-        company = (r.get("company") or "").strip() or "Entreprise"
-        job_post_text = (r.get("job_post_text") or "").strip()
+        company = (r.get("company") or "").strip() or a.company_default or "Entreprise"
+        job_post_text = (r.get("job_post_text") or "").strip() or default_job_text
         letter_path = (r.get("letter_path") or "").strip()
         if not letter_path:
             if job_post_text:

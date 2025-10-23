@@ -61,3 +61,14 @@ def extract_emails(text: str) -> List[str]:
 
 def safe_filename(name: str) -> str:
     return re.sub(r"[^A-Za-z0-9._-]+", "_", name).strip("._") or "file"
+
+def company_from_email(addr: str) -> str:
+    try:
+        local, domain = addr.split("@", 1)
+        parts = domain.lower().split('.')
+        sld = parts[-2] if len(parts) >= 2 else parts[0]
+        if sld in {"gmail", "yahoo", "hotmail", "outlook", "live", "icloud", "proton", "pm", "aol"}:
+            return ""
+        return sld
+    except Exception:
+        return ""
