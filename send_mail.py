@@ -6,24 +6,23 @@ from typing import List, Dict, Any
 from utils import get_env, logger, read_csv, write_csv, validate_email
 
 
-def send_email(smtp_host: str, smtp_port: int, smtp_user: str, smtp_pass: str, from_name: str, to_addr: str, subject: str, body: str, attachments: List[str]) -> None:
+def send_email(smtp_host: str, smtp_port: int, smtp_user: str, smtp_pass: str, from_name: str, to_addr: str, subject: str, body: str, attachments: List[Dict[str, Any]]) -> None:
     msg = EmailMessage()
     msg["From"] = f"{from_name} <{smtp_user}>"
     msg["To"] = to_addr
     msg["Subject"] = subject
     msg.set_content(body)
-    for path in attachments:
-        if not path or not os.path.exists(path):
+    for att in attachments:
+        if not att or not att.get("data"):
             continue
-        with open(path, "rb") as f:
-            data = f.read()
-        ext = os.path.splitext(path)[1].lower()
+        data = att["data"]
+        filename = att.get("filename", "attachment")
         maintype, subtype = ("application", "octet-stream")
-        if ext == ".pdf":
+        if filename.endswith(".pdf"):
             maintype, subtype = ("application", "pdf")
-        elif ext == ".docx":
+        elif filename.endswith(".docx"):
             maintype, subtype = ("application", "vnd.openxmlformats-officedocument.wordprocessingml.document")
-        msg.add_attachment(data, maintype=maintype, subtype=subtype, filename=os.path.basename(path))
+        msg.add_attachment(data, maintype=maintype, subtype=subtype, filename=filename)
     with smtplib.SMTP(smtp_host, smtp_port) as s:
         s.starttls()
         s.login(smtp_user, smtp_pass)

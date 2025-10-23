@@ -207,20 +207,11 @@ if emails_df is not None:
             st.error("Please provide an email body.")
             st.stop()
 
-        # Save uploads to temp paths
-        os.makedirs("tmp_uploads", exist_ok=True)
-        cv_path = os.path.join("tmp_uploads", safe_filename(cv_upload.name))
-        with open(cv_path, "wb") as f:
-            f.write(cv_upload.read())
-        template_path = os.path.join("tmp_uploads", safe_filename(template_upload.name))
-        with open(template_path, "wb") as f:
-            f.write(template_upload.read())
-        os.environ["CV_PATH"] = cv_path
-        os.environ["TEMPLATE_PATH"] = template_path
-
-        # Prepare letters output (we will copy the uploaded template as-is with a new name)
-        out_letters = "out_letters"
-        os.makedirs(out_letters, exist_ok=True)
+        # Prepare attachments as data dicts
+        attachments = [
+            {"data": cv_upload.read(), "filename": cv_upload.name},
+            {"data": template_upload.read(), "filename": "lettre_de_motivation.pdf"}
+        ]
 
         sent = 0
         errors = 0
@@ -235,20 +226,11 @@ if emails_df is not None:
                 errors += 1
                 continue
             try:
-                # Extract company for subject (optional)
-                comp = company_from_email(email)
-                # Decide attachment name: always "lettre_de_motivation.pdf"
-                letter_name = "lettre_de_motivation.pdf"
-                letter_path = os.path.join(out_letters, letter_name)
-                # Copy template as-is to the target name (no modification)
-                with open(template_path, "rb") as src, open(letter_path, "wb") as dst:
-                    dst.write(src.read())
                 # Use user-provided subject and body
                 subject = email_subject.strip()
                 body = email_body.strip()
                 if job_post_text.strip():
                     body += f"\n\nJob Description:\n{job_post_text.strip()}"
-                attachments = [cv_path, letter_path]
                 if dry_run:
                     logger.info(f"DRY RUN -> To: {email} | Subject: {subject} | Attachments: {attachments}")
                     st.write(f"DRY RUN: Would send to {email} with subject '{subject}' and attachments {attachments}")

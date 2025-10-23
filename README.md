@@ -69,5 +69,5 @@ Remove `--dry` to actually send.
 ## Notes
 
 - PDF files are ignored by Git (`.gitignore`) to avoid pushing personal documents.
-- The app copies your uploaded letter template unchanged and attaches it as "lettre_de_motivation.pdf".
+- The app sends emails directly without saving any files to disk (no `tmp_uploads/` or `out_letters/`).
 - Use responsibly and ensure compliance with laws.
