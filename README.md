@@ -20,7 +20,6 @@
 job-mailer/
 ├─ README.md
 ├─ requirements.txt
-├─ config.example.env
 ├─ templates/
 │  └─ lettre_template.docx
 │  └─ cv.pdf
@@ -28,7 +27,7 @@ job-mailer/
 ├─ linkedin_scraper.py
 ├─ send_mail.py
 ├─ pdf_extract_emails.py
-└─ utils.py
+└─ streamlit_app.py
 ```
 
 ## Setup
@@ -37,17 +36,9 @@ job-mailer/
 python -m venv venv
 venv\\Scripts\\activate  # Windows
 pip install -r requirements.txt
-copy config.example.env .env
 ```
 
-Fill `.env` with your values.
-
-## Environment Variables
-
-- `OPENAI_API_KEY`
-- `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `FROM_NAME`
-- `CV_PATH`, `TEMPLATE_PATH`
-- `LINKEDIN_CLIENT_ID`, `LINKEDIN_CLIENT_SECRET`, `LINKEDIN_REDIRECT_URI`
+All configuration is done in the Streamlit app UI.
 
 ## Usage
 
@@ -58,9 +49,9 @@ streamlit run streamlit_app.py
 In the sidebar:
 - Upload PDFs/DOCX and/or paste URLs.
 - Choose field (Data/AI, Cybersecurity, Dev) and optional extra keywords.
-- Upload your CV (PDF) and template (DOCX).
+- Upload your CV (PDF) and template (PDF).
 - Enter `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `FROM_NAME`.
-- Provide a job description text for personalization.
+- Provide an email subject and body (job description is optional and will be appended to the body).
 - Click "Extract emails" then "Send emails now" (start with Dry run).
 
 ### PDF to contacts CSV (recommended if your data comes via PDFs):

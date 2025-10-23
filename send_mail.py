@@ -3,42 +3,7 @@ import argparse
 import smtplib
 from email.message import EmailMessage
 from typing import List, Dict, Any
-from utils import get_env, get_openai_client, logger, read_csv, write_csv, validate_email
-from modify_letter import generate_for_post
-
-
-def gen_subject_body(job_post_text: str, company: str) -> Dict[str, str]:
-    job_post_text = (job_post_text or "").strip()
-    if not job_post_text:
-        subject = f"Candidature – {company}" if company else "Candidature"
-        body = (
-            "Bonjour,\n\n"
-            "Je vous contacte pour vous proposer ma candidature. Vous trouverez ci-joint mon CV ainsi qu’une lettre de motivation.\n\n"
-            "Je reste à votre disposition pour tout échange.\n\n"
-            "Cordialement,\n"
-        )
-        return {"subject": subject[:150], "body": body}
-    client = get_openai_client()
-    system = (
-        "Tu es un assistant qui rédige des emails de candidature concis en français. "
-        "Crée un objet et un corps adaptés au poste et à l'entreprise."
-    )
-    user = (
-        f"Entreprise: {company}\n\n"
-        f"Description du poste:\n{job_post_text}\n\n"
-        "Consignes: objet court et percutant; corps poli, professionnel, avec appel à l'action."
-    )
-    r = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[{"role": "system", "content": system}, {"role": "user", "content": user}],
-        temperature=0.4,
-        max_tokens=500,
-    )
-    txt = (r.choices[0].message.content or "").strip()
-    lines = [x.strip() for x in txt.splitlines() if x.strip()]
-    subject = lines[0][:150] if lines else "Candidature"
-    body = "\n".join(lines[1:]) if len(lines) > 1 else txt
-    return {"subject": subject, "body": body}
+from utils import get_env, logger, read_csv, write_csv, validate_email
 
 
 def send_email(smtp_host: str, smtp_port: int, smtp_user: str, smtp_pass: str, from_name: str, to_addr: str, subject: str, body: str, attachments: List[str]) -> None:

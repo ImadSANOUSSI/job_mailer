@@ -25,3 +25,4 @@ out_letters/
 sent_log.csv
 contacts.csv
 urls.csv
+*.pdf
