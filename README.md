@@ -40,7 +40,7 @@ All configuration is done in the Streamlit app UI.
 streamlit run streamlit_app.py
 ```
 In the sidebar:
-- Upload PDFs and/or paste URLs.
+- Upload files (PDF, DOCX, CSV, XLSX) and/or paste URLs.
 - Choose field (Data/AI, Cybersecurity, Dev) and optional extra keywords.
 - Upload your CV (PDF) and template (PDF).
 - Enter `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `FROM_NAME`.

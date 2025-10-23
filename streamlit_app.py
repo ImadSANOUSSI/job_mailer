@@ -51,14 +51,13 @@ def text_from_docx(file_like: io.BytesIO) -> str:
             pass
 
 
-def text_from_url(url: str) -> str:
-    try:
-        r = requests.get(url, timeout=20)
-        r.raise_for_status()
-        soup = BeautifulSoup(r.text, "lxml")
-        return soup.get_text(" ")
-    except Exception:
-        return ""
+def text_from_csv(file_like: io.BytesIO) -> str:
+    df = pd.read_csv(file_like)
+    return df.to_string(index=False)
+
+def text_from_xlsx(file_like: io.BytesIO) -> str:
+    df = pd.read_excel(file_like, engine="openpyxl")
+    return df.to_string(index=False)
 
 
 def find_emails_with_context(text: str, context_window: int = 80) -> List[Tuple[str, str]]:
@@ -109,8 +108,7 @@ st.title("Job Mailer – Streamlit")
 
 with st.sidebar:
     st.header("Extraction sources")
-    pdf_files = st.file_uploader("Upload PDF files", type=["pdf"], accept_multiple_files=True)
-    docx_files = st.file_uploader("Upload DOCX files", type=["docx"], accept_multiple_files=True)
+    uploaded_files = st.file_uploader("Upload files (PDF, DOCX, CSV, XLSX)", type=["pdf", "docx", "csv", "xlsx"], accept_multiple_files=True)
     url_input = st.text_area("Paste URLs (one per line)", height=100)
 
     st.header("Field & Filtering")
@@ -138,23 +136,23 @@ extract_btn = st.button("1) Extract emails")
 if extract_btn:
     all_rows: List[Dict[str, str]] = []
 
-    # PDFs
-    for f in pdf_files or []:
+    # Uploaded files
+    for f in uploaded_files or []:
         try:
-            text = text_from_pdf(f)
+            if f.type == "application/pdf":
+                text = text_from_pdf(f)
+            elif f.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+                text = text_from_docx(f)
+            elif f.type == "text/csv":
+                text = text_from_csv(f)
+            elif f.type == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
+                text = text_from_xlsx(f)
+            else:
+                continue
             for email, ctx in find_emails_with_context(text):
                 all_rows.append({"email": email, "source": f.name, "context": ctx})
         except Exception as ex:
-            st.warning(f"Failed reading PDF {f.name}: {ex}")
-
-    # DOCX
-    for f in docx_files or []:
-        try:
-            text = text_from_docx(f)
-            for email, ctx in find_emails_with_context(text):
-                all_rows.append({"email": email, "source": f.name, "context": ctx})
-        except Exception as ex:
-            st.warning(f"Failed reading DOCX {f.name}: {ex}")
+            st.warning(f"Failed reading {f.name}: {ex}")
 
     # URLs
     for u in (url_input or "").splitlines():
